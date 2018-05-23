@@ -32,7 +32,7 @@
               <input class="form-control" id="navbar-search-input" type="text" name="navbar-search-input" placeholder="Enter keyword here" required=""/>
             </div>
             <div class="col-sm-2 text-center">
-              <input class="btn btn-info btn-md btn-flat" style="color:white; background-color:#9E9E9E" type="submit" name="check" id="check" value="Search"/>
+              <input class="btn btn-info btn-md btn-flat" style="color:#0288D1; background-color:#FAFAFA" type="submit" name="check" id="check" value="Search"/>
             </div>
           </div>
         </form>

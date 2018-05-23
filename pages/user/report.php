@@ -31,10 +31,27 @@
             <div class="box-header with-border">
               <h3 class="box-title">Why do you report this thread?</h3>
             </div>
+            <?php
+              if(isset($_POST['report'])){
+                if($_POST['rpbody']==''){
+                  echo "<br><p style='color:#D50000'>&emsp;&emsp;Report field is empty.</p>";
+                }
+                else{
+                  $_POST['rpbody'] = str_replace("'", "’", $_POST['rpbody']);
+
+                  include "../database/connect.php";
+                  $query2 = "CALL report_thread('$_POST[rpbody]','$_SESSION[thread]','$_SESSION[userid]')";
+                  $sql2 = mysqli_query($db, $query2);
+                  $row2 = mysqli_fetch_array($sql2);
+                  echo '<meta http-equiv="refresh" content="0; URL=thread.php">';
+                  mysqli_close($db);
+                }
+              }            
+            ?> 
             <form role="form" method="post">
               <fieldset>
                   <div class="form-group col-sm-12">
-                      <input class="form-control" autofocus id="title" type="text" name="title" placeholder="Explain why you want to report here" required=""/>
+                      <textarea class="form-control" name="rpbody" id="rpbody" placeholder="Enter your reply here" required=""></textarea>
                   </div>
                   <div class="col-sm-12">
                     <input class="btn btn-md btn-primary btn-flat" type="submit" name="report" id="report" value="Report"/><br><br>
@@ -43,8 +60,39 @@
           </form>
         </div>
 
-        </section>
-        <!--====================================================/CONTENT=============================================================-->
+        <div class="box box-widget">
+          <?php
+            if(isset($_SESSION['thread'])){
+                include "../database/connect.php";
+                $query = "CALL thread_view($_SESSION[thread])";
+                $sql = mysqli_query($db, $query);
+                $row = mysqli_fetch_array($sql);
+                $attach=$row['thread_attachment'];
+                $attach = str_replace("../../uploads/attachment/", "", $attach);
+            }
+          ?>
+          <!-- Main Thread -->
+          <div class="box-header with-border">
+            <div class="user-block">
+              <img class="img-circle" src="<?php echo"$row[user_photo]";?>" alt="User Image">
+              <span class="username"><?php echo"$row[thread_judul]";?>                    
+              </span>
+              <span class="description">by <?php echo"$row[user_name]";?> at <?php echo"$row[thread_time]";?></span>
+            </div>
+          </div>
+          <div class="box-body">
+            <p>&nbsp;<?php echo nl2br("$row[thread_isi]");?></p>
+             <!-- Attachment -->
+            <?php 
+              if($row['thread_attachment']!= NULL){
+                echo"
+                  <br><p class='text-muted'>Attachment</p>
+                  <a class='btn btn-default btn-md btn-flat' href='$row[thread_attachment]'>$attach</a>
+                ";  
+              }
+            ?>
+          </div>
+       <!--====================================================/CONTENT=============================================================-->
       </div>
     </div>
   </div>

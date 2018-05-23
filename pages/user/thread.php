@@ -34,22 +34,30 @@
                     $attach=$row['thread_attachment'];
                     $attach = str_replace("../../uploads/attachment/", "", $attach);
                 }
-                if(isset($_SESSION['delete'])){
+                if(isset($_POST['deletet'])){
                     include "../database/connect.php";
-                    $query1 = "CALL delete_thread($_SESSION[thread])";
-                    $sql1 = mysqli_query($db, $query1);
-                    $row1 = mysqli_fetch_array($sql1);
+                    $query3 = "CALL delete_thread($_POST[deletet])";
+                    $sql3 = mysqli_query($db, $query3);
+                    $row3 = mysqli_fetch_array($sql3);
+                    echo '<meta http-equiv="refresh" content="0; URL=account.php">';
+                }
+                if(isset($_POST['edit'])){
+                    $_SESSION['thread']=$_POST['edit'];
+                    echo '<meta http-equiv="refresh" content="0; URL=editthread.php">';
                 }
               ?>
               <!-- Main Thread -->
               <div class="box-header with-border">
                 <div class="user-block">
                   <img class="img-circle" src="<?php echo"$row[user_photo]";?>" alt="User Image">
-                  <span class="username"><?php echo"$row[thread_judul]";?>
+                  <span class="username"><?php echo"$row[thread_judul]";?>                    
                     <?php
-                      if($_SESSION['userid'] == "admin" || $_SESSION['userid'] == $row['user_name']){
+                      if($_SESSION['userid'] == "admin" || $_SESSION['userid'] == $row['user_id']){
                         echo"
-                          <button class ='btn btn-md btn-danger pull-right' data-toggle='modal' data-target='#Delete'>Delete</button>
+                          <button class ='btn btn-sm btn-flat btn-danger pull-right' data-toggle='modal' data-target='#Delete'><em class='fa fa-trash'></em></button>
+                          <form action='#' method='post' class='pull-right' style='display:inline-block'>
+                            <button class ='btn btn-sm btn-flat btn-default' type='submit' name='edit' value='$row[thread_id]'><em class='fa fa-pencil'></em></button>
+                          </form>
                         ";
                       }
                       else{
@@ -68,15 +76,29 @@
                             <p>Are you sure you want to delete this thread?</p> 
                           </div>
                           <div class="modal-footer">
-                            <button class ="btn btn-md btn-danger" type="submit" name="delete" value="$_SESSION[thread]">Delete</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <form action="#" method="post">
+                              <?php
+                                echo "<button class ='btn btn-md btn-flat btn-danger' type='submit' name='deletet' id='deletet' value='$row[thread_id]'>Delete</button>
+                                ";
+                              ?>
+                              <button type="button" class="btn btn-flat btn-default" data-dismiss="modal">Cancel</button>
+                            </form>
                           </div>
                         </div>
                       </div>
                     </div>
                 
                   </span>
-                  <span class="description">by <?php echo"$row[user_name]";?> at <?php echo"$row[thread_time]";?></span>
+                  <span class="description">
+                    <?php
+                      if($row['thread_edit']==0){
+                        echo "Created ";
+                      }
+                      else{
+                        echo "Edited ";
+                      }
+                    ?>
+                    by <?php echo"$row[user_name]";?> at <?php echo"$row[thread_time]";?></span>
                 </div>
               </div>
               <div class="box-body">

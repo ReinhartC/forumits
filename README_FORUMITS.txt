@@ -3,10 +3,11 @@ ForumITS v0.6
 - View and Edit User Account
 - Reply thread
 - Use attachment
+- Edit and Delete Thread
 
 ++
 Interactive UI
-Animated landing page
+Animated landing page :D
 
 ==Plan for v1.0==
 To Add
@@ -19,11 +20,8 @@ ADMIN
 
 USER
 - Public and Private Thread !!! (Dafuqqqq)
-- Edit Thread
-- Delete Thread (Creator Only)
-- Report
-- Admin message and Announcement
-- Notification
+- Admin Announcement
+- Notification (Reply, delete, edit, report)
 
 To Fix
 - Mobile view broken

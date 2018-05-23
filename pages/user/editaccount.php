@@ -33,24 +33,26 @@
               $tdir = "../../uploads/profpic/";
               $tfile = $tdir . basename($_FILES['photo']['name']);
 
-              if(move_uploaded_file($_FILES['photo']['tmp_name'], $tfile)) {               
+                       
                 include "../database/connect.php";
               
                 $_POST['email'] = str_replace("'", "’", $_POST['email']);
                 $_POST['phone'] = str_replace("'", "’", $_POST['phone']);
                 $_POST['note'] = str_replace("'", "’", $_POST['note']);
                 
-                $query = "CALL account_edit('$_SESSION[userid]','$_POST[email]','$_POST[phone]','$tfile','$_POST[note]')";
+                if($_FILES["photo"]["size"] == 0){
+                  $query = "CALL account_edit('$_SESSION[userid]','$_POST[email]','$_POST[phone]','$_SESSION[usrpt]','$_POST[note]')";
+                }
+                else{
+                  $query = "CALL account_edit('$_SESSION[userid]','$_POST[email]','$_POST[phone]','$tfile','$_POST[note]')";
+                }
                 $sql = mysqli_query($db, $query);
-
                 $row = mysqli_fetch_array($sql);
                 $edits=$row[1];
+                unset($_SESSION['usrpt']);
                 echo '<meta http-equiv="refresh" content="0; URL=account.php">';
                 mysqli_close($db);
-              }
-              else{
-                echo "<h4 style='color:#D50000'>Photo is still empty.</h4>";
-              }
+              
             }
           ?>
 
@@ -61,6 +63,7 @@
               $query = "CALL user_data_acc('$_SESSION[userid]')";
               $sql = mysqli_query($db, $query);
               $row = mysqli_fetch_array($sql);
+              $_SESSION['usrpt']=$row['user_photo'];
             }
           ?>
 
@@ -93,7 +96,7 @@
                   <div class="col-sm-6">
                     <strong>Photo</strong><br>
                     <div class="btn btn-default btn-file btn-flat">
-                      <i class="fa fa-paperclip"></i>&nbsp; Attachment
+                      Change
                       <input type="file" id="photo" name="photo" accept="image/*"/>
                     </div>
                     <p class="help-block"><small>(Hover at the button to see the photo)</small> <br>
@@ -102,7 +105,8 @@
                   <div class="form-group col-sm-6">
                       <strong>Note</strong>  
                       <textarea class="form-control" name="note" id="note" rows="5" cols="40" placeholder="User Note"><?php echo "$row[user_note]";?></textarea>
-                  </div>                  
+                  </div>  
+                  
                   <div class="col-sm-12">
                       <br><input class="btn btn-md btn-primary btn-flat" type="submit" name="edit" id="edit" value="Confirm"/><br><br>
                   </div>
