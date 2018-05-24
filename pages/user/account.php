@@ -104,7 +104,7 @@
                             ";
                           }                          
                           include '../database/connect.php';
-                          $query = "CALL account_threadlist($_SESSION[userid],7)";
+                          $query = "CALL account_threadlist($_SESSION[userid],4)";
                           $sql = mysqli_query($db, $query) or die("Query fail : ".mysqli_error($db));
                           $ThreadArr = array();
                           $ctr=0;
@@ -127,7 +127,63 @@
                 </div>
               </div>
               <?php
-                if($ctr>=7){
+                if($ctr>4){
+                  echo "<a class='btn btn-default btn-flat' href='accthreads.php'>View All</a>";
+                }
+              ?>
+            </div>
+
+            <div class="col-md-9">
+              <div class="box box-primary">
+                <div class="box-header with-border">
+                  <h3 class="box-title">Latest Threads</h3>
+                </div>
+                <div class="box-body no-padding">
+                  <div class="table-responsive mailbox-messages">
+                    <table class="table table-hover table-striped">
+                      <tbody>
+                        <!-- Thread load loop -->
+                        <?php
+                        include "../database/connect.php";
+                        $query4 = "CALL prvt_count($_SESSION[userid])";
+                        $sql4 = mysqli_query($db, $query4);
+                        $row4 = mysqli_fetch_array($sql4);
+                          if($row4['pc']==0){
+                            echo "
+                              <tr>
+                                <td class='text-left'>
+                                  <form method='post'>
+                                    User is not in any private thread yet.
+                                  </form>
+                                </td>
+                              </tr>
+                            ";
+                          }                          
+                          include '../database/connect.php';
+                          $query1 = "CALL prvt_list($_SESSION[userid],4)";
+                          $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
+                          $ThreadArr1 = array();
+                          $ctr1=0;
+                          while($row1 = mysqli_fetch_assoc($sql1)){
+                            $ctr1++;
+                        ?>
+                        <tr>
+                          <td class="text-left"><b>
+                            <form method="post">
+                              <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row1[thread_id]";?>"><?php echo"$row1[thread_judul]";?></button>
+                            </form>
+                          </b><small><?php echo"$row1[creator]";?></small></td>
+                          <td class="text-right"><small><?php echo"$row1[thread_time]";?></small></td>
+                        </tr>
+                        <?php } ?>
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <?php
+                if($ctr1>4){
                   echo "<a class='btn btn-default btn-flat' href='accthreads.php'>View All</a>";
                 }
               ?>

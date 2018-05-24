@@ -28,14 +28,22 @@
         <section class="content">
 
           <!-- Admin Messages -->
-          <div class="callout callout-info">
-            <h4>Announcement</h4>
-            <p>Admin announcement feature will be coming soon...</p>
-          </div>
-          <div class="callout callout-warning">
-            <h4>Admin Message</h4>
-            <p>User specific message feature will be coming soon...</p>
-          </div>
+          <?php
+            include "../database/connect.php";
+            $querya = "CALL announcement()";
+            $sqla = mysqli_query($db, $querya);
+            $rowa = mysqli_fetch_array($sqla);
+            
+            if($rowa['thread_edit']==1){
+              echo"
+                <div class='callout callout-warning'>
+                  <h4>Administrator Announcement</h4>
+                  <strong><i>$rowa[thread_judul]</i></strong>
+                  <p>$rowa[thread_isi]</p>
+                </div>
+              ";
+            }
+          ?>
 
           <?php
             if(isset($_POST['thread'])){
@@ -61,6 +69,7 @@
                       $sql = mysqli_query($db, $query) or die("Query fail : ".mysqli_error($db));
                       $ThreadArr = array();
                       while($row = mysqli_fetch_assoc($sql)){
+                        if($row['thread_access']=='public'){
                     ?>
                     <tr>
                       <td class="text-left"><b>
@@ -70,7 +79,7 @@
                       </b><small><?php echo"$row[user_name]";?></small></td>
                       <td class="text-right"><small><?php echo"$row[thread_time]";?>&emsp;</small></td>
                     </tr>
-                    <?php } ?>
+                    <?php }} ?>
 
                     </tbody>
                   </table>
@@ -98,6 +107,7 @@
                       $sql = mysqli_query($db, $query) or die("Query fail : ".mysqli_error($db));
                       $ThreadArr = array();
                       while($row = mysqli_fetch_assoc($sql)){
+                        if($row['thread_access']=='public'){
                     ?>
                     <tr>
                       <td class="text-left"><b>
@@ -107,7 +117,7 @@
                       </b><small><?php echo"$row[user_name]";?></small></td>
                       <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
                     </tr>
-                    <?php } ?>
+                    <?php }} ?>
 
                     </tbody>
                   </table>

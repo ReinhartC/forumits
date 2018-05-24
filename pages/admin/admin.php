@@ -4,7 +4,7 @@
 <html>
 <head>
   <!-- Tabs Title -->
-  <title>FITS | Home</title>
+  <title>FITS | Admin Panel</title>
   <!-- HEADER -->
   <link rel="import" href="../elements/header.html">
   <meta charset="utf-8">

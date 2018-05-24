@@ -1,4 +1,7 @@
-<?php include "../database/verify.php"; ?>
+  <?php 
+    include "../database/verify.php"; 
+    include "../database/prvthread.php";
+  ?>
 
 <!DOCTYPE html>
 <html>
@@ -41,7 +44,7 @@
                     $row3 = mysqli_fetch_array($sql3);
                     if ($_SESSION['userid']==$row['user_id']){
                       include "../database/connect.php";
-                      $notiff="You have successfully deleted your `$row[thread_judul]` thread";
+                      $notiff="You have successfully deleted your ’$row[thread_judul]’ thread";
                       $queryn = "CALL notif_add('$row[user_id]','$notiff')";
                       $sqln = mysqli_query($db, $queryn);
                       $rown = mysqli_fetch_array($sqln);
@@ -154,11 +157,12 @@
                     $row2 = mysqli_fetch_array($sql2);
                     if ($_SESSION['userid']!=$row['user_id']){
                       include "../database/connect.php";
-                      $notiff="$_SESSION[username] have replied to your `$row[thread_judul]` thread";
+                      $notiff="$_SESSION[username] have commented on your ’$row[thread_judul]’ thread";
                       $queryn = "CALL notif_add('$row[user_id]','$notiff')";
                       $sqln = mysqli_query($db, $queryn);
                       $rown = mysqli_fetch_array($sqln);
                     }
+                    echo '<meta http-equiv="refresh" content="0; URL=thread.php">';
                     mysqli_close($db);
                   }
                 }            

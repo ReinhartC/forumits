@@ -51,7 +51,7 @@
                   $row3 = mysqli_fetch_array($sql3);
                   
                   include "../database/connect.php";
-                  $notiff="Admin have deleted your `$row1[thread_judul]` thread";
+                  $notiff="Admin have deleted your ’$row1[thread_judul]’ thread";
                   $queryn = "CALL notif_add('$row1[user_id]','$notiff')";
                   $sqln = mysqli_query($db, $queryn);
                   $rown = mysqli_fetch_array($sqln);

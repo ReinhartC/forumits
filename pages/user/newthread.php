@@ -42,15 +42,28 @@
                 $_POST['title'] = str_replace("'", "’", $_POST['title']);
 
                 if($_FILES["attachment"]["size"] == 0){
-                  $query = "CALL new_thread('$_POST[title]','$_POST[body]','','$_SESSION[userid]')";
+                  $query = "CALL new_thread('$_POST[title]','$_POST[body]','','$_POST[access]','$_SESSION[userid]')";
                 }
                 else if(move_uploaded_file($_FILES["attachment"]["tmp_name"], $tfile)){
-                  $query = "CALL new_thread('$_POST[title]','$_POST[body]','$tfile','$_SESSION[userid]')";
+                  $query = "CALL new_thread('$_POST[title]','$_POST[body]','$tfile','$_POST[access]','$_SESSION[userid]')";
                 }
                 $sql = mysqli_query($db, $query);
                 $row = mysqli_fetch_array($sql);
-                $adds=$row[1];   
-                echo '<meta http-equiv="refresh" content="0; URL=account.php">';
+                $adds=$row[1];
+
+                include "../database/connect.php";
+                $notiff="You have successfully created the ’$_POST[title]’ thread";
+                $queryn = "CALL notif_add('$_SESSION[userid]','$notiff')";
+                $sqln = mysqli_query($db, $queryn);
+                $rown = mysqli_fetch_array($sqln);
+
+                if($_POST['access']=='public'){
+                  echo '<meta http-equiv="refresh" content="0; URL=account.php">';  
+                }
+                else{
+                  $_SESSION['priv']=1;
+                  echo '<meta http-equiv="refresh" content="0; URL=addaccess.php">';
+                } 
                 mysqli_close($db);   
               }
             }      
@@ -67,7 +80,7 @@
                       <input class="form-control" autofocus id="title" type="text" name="title" placeholder="Thread title" required=""/>
                   </div>
                   <div class="form-group col-sm-12">
-                      <textarea class="form-control" name="body" id="body" rows="5" cols="40" placeholder="Thread body" required=""></textarea>
+                      <textarea class="form-control" name="body" id="body" rows="5" cols="40" placeholder="Thread body"></textarea>
                   </div>
                   <div class="col-sm-12">
                     <div class="btn btn-default btn-file btn-flat">
@@ -79,8 +92,25 @@
                     If there is no attachments, you can leave it empty.</p>
                   </div>
                   <div class="col-sm-12">
+                    <div class="form-group">
+                      <div class="radio">
+                        <label>
+                          <input type="radio" name="access" id="access" value="public" checked="">
+                          Public
+                        </label>
+                      </div>
+                      <div class="radio">
+                        <label>
+                          <input type="radio" name="access" id="access2" value="private">
+                          Private
+                        </label>
+                      </div>
+                    </div>
+                  </div> 
+                  <div class="col-sm-12">
                       <br><input class="btn btn-md btn-primary btn-flat" type="submit" name="add" id="add" value="Add"/><br><br>
                   </div>
+                  
               </fieldset>
           </form>
         </div>

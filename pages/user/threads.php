@@ -59,6 +59,7 @@
                             $sql = mysqli_query($db, $query) or die("Query fail : ".mysqli_error($db));
                             $ThreadArr = array();
                             while($row = mysqli_fetch_assoc($sql)){
+                              if($row['thread_access']=='public'){
                           ?>
                           <tr>
                             <td class="text-left"><b>
@@ -68,7 +69,7 @@
                             </b><small><?php echo"$row[user_name]";?></small></td>
                             <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
                           </tr>
-                          <?php } ?>                            
+                          <?php }} ?>                            
                         </tbody>
                       </table>
                     </div>
@@ -93,6 +94,7 @@
                             $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
                             $ThreadArr1 = array();
                             while($row1 = mysqli_fetch_assoc($sql1)){
+                              if($row['thread_access']=='public'){
                           ?>
                           <tr>
                             <td class="text-left"><b>
@@ -102,7 +104,7 @@
                             </b><small><?php echo"$row1[user_name]";?></small></td>
                             <td class="text-right"><small><?php echo"$row1[thread_time]";?></small></td>
                           </tr>
-                          <?php } ?>
+                          <?php }} ?>
                             
                         </tbody>
                       </table>

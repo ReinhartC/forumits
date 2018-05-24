@@ -72,7 +72,7 @@
             }
             else{
               echo"
-                <li><a href='announcement.php'><i class='fa fa-pencil'></i>&nbsp;&nbsp;Announcement</a></li>
+                <li><a href='announce.php'><i class='fa fa-pencil'></i>&nbsp;&nbsp;Announcement</a></li>
               ";
             } 
           
@@ -89,7 +89,7 @@
             //<!-- Notifications -->          
             if($_SESSION['userid']!="admin"){
               include '../database/connect.php';
-              $query1 = "CALL notif_list('$_SESSION[userid]')";
+              $query1 = "CALL notif_list('$_SESSION[userid]',20)";
               $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
               $NotifArr = array();
               echo"
@@ -106,11 +106,22 @@
               ";
               if($row['user_notifcount']>0){
                 while($row1 = mysqli_fetch_assoc($sql1)){
-                  echo "<a>$row1[notif_isi]</a>";
+                  if (strpos($row1['notif_isi'], 'edited') !== false){
+                    echo "<a><i class='fa fa-pencil-square-o'></i> $row1[notif_isi]</a>";
+                  }
+                  else if (strpos($row1['notif_isi'], 'deleted') !== false){
+                    echo "<a><i class='fa fa-trash-o'></i> $row1[notif_isi]</a>";
+                  }
+                  else if (strpos($row1['notif_isi'], 'commented') !== false){ 
+                    echo "<a><i class='fa fa-comment-o'></i> $row1[notif_isi]</a>";
+                  }
+                  else if (strpos($row1['notif_isi'], 'created') !== false){ 
+                    echo "<a><i class='fa fa-plus'></i> $row1[notif_isi]</a>";
+                  }
                 }
               }
               else{
-                echo "<a>No Notification</a>";
+                echo "<a class='text-center'>No notification</a>";
               }
               echo"
                       

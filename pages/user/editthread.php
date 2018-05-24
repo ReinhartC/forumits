@@ -59,7 +59,7 @@
                 $adds=$row[1];
 
                 include "../database/connect.php";
-                $notiff="You have successfully edited your `$_POST[title]` thread";
+                $notiff="You have successfully edited your ’$_POST[title]’ thread";
                 $queryn = "CALL notif_add('$_SESSION[userid]','$notiff')";
                 $sqln = mysqli_query($db, $queryn);
                 $rown = mysqli_fetch_array($sqln);

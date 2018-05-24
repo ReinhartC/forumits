@@ -41,12 +41,12 @@
                     $row3 = mysqli_fetch_array($sql3);
 
                     include "../database/connect.php";
-                    $notiff="Admin have deleted your `$row[thread_judul]` thread";
+                    $notiff="Admin have deleted your ’$row[thread_judul]’ thread";
                     $queryn = "CALL notif_add('$row[user_id]','$notiff')";
                     $sqln = mysqli_query($db, $queryn);
                     $rown = mysqli_fetch_array($sqln);
 
-                    echo '<meta http-equiv="refresh" content="0; URL=account.php">';
+                    echo '<meta http-equiv="refresh" content="0; URL=threads.php">';
                 }
               ?>
               <!-- Main Thread -->
