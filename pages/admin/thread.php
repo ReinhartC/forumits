@@ -53,7 +53,7 @@
               <div class="box-header with-border">
                 <div class="user-block">
                   <img class="img-circle" src="<?php echo"$row[user_photo]";?>" alt="User Image">
-                  <span class="username"><?php echo"$row[thread_judul]";?>                    
+                  <span class="username"><?php echo"$row[thread_judul]"; if($row['thread_access']=='private'){echo" &nbsp;<i class='fa fa-lock'></i>";}?>                    
                     <?php
                       if($_SESSION['userid'] == "admin" || $_SESSION['userid'] == $row['user_id']){
                         echo"

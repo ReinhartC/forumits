@@ -55,7 +55,7 @@
                           <!-- Thread load loop -->
                           <?php
                             include '../database/connect.php';
-                            $query = "CALL thread_load('Dosen',50)";
+                            $query = "CALL thread_loadp('Dosen',50)";
                             $sql = mysqli_query($db, $query) or die("Query fail : ".mysqli_error($db));
                             $ThreadArr = array();
                             while($row = mysqli_fetch_assoc($sql)){
@@ -64,7 +64,7 @@
                           <tr>
                             <td class="text-left"><b>
                               <form method="post">
-                                <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]";?></button>
+                                <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]"; if($row['thread_access']=='private'){echo" &nbsp;<i class='fa fa-lock'></i>";}?></button>
                               </form>
                             </b><small><?php echo"$row[user_name]";?></small></td>
                             <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
@@ -90,7 +90,7 @@
                           <!-- Thread load loop -->
                           <?php
                             include '../database/connect.php';
-                            $query1 = "CALL thread_load('Mahasiswa',50)";
+                            $query1 = "CALL thread_loadp('Mahasiswa',50)";
                             $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
                             $ThreadArr1 = array();
                             while($row1 = mysqli_fetch_assoc($sql1)){
@@ -99,7 +99,7 @@
                           <tr>
                             <td class="text-left"><b>
                               <form method="post">
-                                <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row1[thread_id]";?>"><?php echo"$row1[thread_judul]";?></button>
+                                <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row1[thread_id]";?>"><?php echo"$row1[thread_judul]"; if($row1['thread_access']=='private'){echo" &nbsp;<i class='fa fa-lock'></i>";}?></button>
                               </form>
                             </b><small><?php echo"$row1[user_name]";?></small></td>
                             <td class="text-right"><small><?php echo"$row1[thread_time]";?></small></td>
