@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 24, 2018 at 11:52 AM
+-- Generation Time: May 24, 2018 at 01:24 PM
 -- Server version: 10.1.29-MariaDB
 -- PHP Version: 7.2.0
 
@@ -219,6 +219,16 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_load` (`const` VARCHAR(64), 
 	LIMIT lmt;
     END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_loadp` (`const` VARCHAR(64), `lmt` INT)  BEGIN
+	SELECT fits_thread.*, fits_user.`user_name`, fits_user.`user_role`
+	FROM fits_thread, fits_user
+	WHERE fits_thread.`user_id`=fits_user.`user_id`
+	AND fits_user.`user_role` = const
+	and fits_thread.`thread_access`='public'
+	ORDER BY thread_time DESC 
+	LIMIT lmt;
+    END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_status` (`tid` INT)  BEGIN
 	SELECT fits_thread.`thread_access`
 	FROM fits_thread
@@ -347,7 +357,20 @@ INSERT INTO `fits_notification` (`notif_id`, `user_id`, `notif_isi`, `notif_time
 (66, '1002420091', 'You have successfully created the â€™asfaâ€™ thread', '2018-05-24 09:15:01'),
 (67, '1002420091', 'You have successfully created the â€™fewkpâ€™ thread', '2018-05-24 09:23:24'),
 (68, '5115100166', 'You have successfully created the â€™canioâ€™ thread', '2018-05-24 09:32:52'),
-(69, '5115100166', 'You have successfully created the â€™fenioâ€™ thread', '2018-05-24 09:33:00');
+(69, '5115100166', 'You have successfully created the â€™fenioâ€™ thread', '2018-05-24 09:33:00'),
+(70, '5115100166', 'You have successfully created the â€™aionâ€™ thread', '2018-05-24 10:11:03'),
+(71, '5115100132', 'You have successfully created the â€™scecâ€™ thread', '2018-05-24 10:13:00'),
+(72, '5115100132', 'You have successfully created the â€™nwvkâ€™ thread', '2018-05-24 10:14:07'),
+(73, '5115100132', 'You have successfully created the â€™csasackpâ€™ thread', '2018-05-24 10:15:55'),
+(74, '5115100132', 'You have successfully created the â€™1â€™ thread', '2018-05-24 10:16:22'),
+(75, '5115100132', 'You have successfully created the â€™2â€™ thread', '2018-05-24 10:16:38'),
+(76, '5115100132', 'You have successfully created the â€™wenfioâ€™ thread', '2018-05-24 10:16:52'),
+(77, '5115100132', 'You have successfully created the â€™cwhioâ€™ thread', '2018-05-24 10:19:29'),
+(78, '5115100132', 'You have successfully created the â€™wnefioâ€™ thread', '2018-05-24 10:19:37'),
+(79, '5115100132', 'You have successfully created the â€™wemopâ€™ thread', '2018-05-24 10:19:48'),
+(80, '5115100132', 'You have successfully created the â€™ewnioeâ€™ thread', '2018-05-24 10:20:00'),
+(81, '5115100132', 'You have successfully created the â€™ewniâ€™ thread', '2018-05-24 10:20:13'),
+(82, '5115100166', 'Admin have deleted your â€™fsdsdfâ€™ thread', '2018-05-24 10:31:08');
 
 -- --------------------------------------------------------
 
@@ -368,7 +391,32 @@ CREATE TABLE `fits_private` (
 INSERT INTO `fits_private` (`private_id`, `thread_id`, `user_id`) VALUES
 (1, 107, '5115100132'),
 (2, 107, '1002420013'),
-(3, 107, '1002420091');
+(3, 107, '1002420091'),
+(4, 110, '5115100132'),
+(5, 110, '5115100166'),
+(6, 111, '1002420013'),
+(7, 111, '5115100132'),
+(8, 112, '5115100172'),
+(9, 112, '5115100132'),
+(10, 113, '5115100166'),
+(11, 113, '1002420013'),
+(12, 113, '5115100132'),
+(13, 114, '1002420013'),
+(14, 114, '5115100132'),
+(15, 115, '5115100172'),
+(16, 115, '5115100132'),
+(17, 116, '5115100172'),
+(18, 116, '1002420013'),
+(19, 116, '5115100132'),
+(20, 117, '1002420013'),
+(21, 117, '5115100132'),
+(22, 118, '5115100172'),
+(23, 118, '5115100132'),
+(24, 120, '1002420091'),
+(25, 120, '5115100132'),
+(26, 121, '5115100172'),
+(27, 121, '1002420013'),
+(28, 121, '5115100132');
 
 -- --------------------------------------------------------
 
@@ -415,8 +463,7 @@ INSERT INTO `fits_report` (`report_id`, `report_isi`, `reporter`, `thread_id`, `
 (6, 'dsvsvsdv', '1002420091', 73, '2018-05-23 17:16:49'),
 (7, 'vsmdl;vs', '1002420091', 31, '2018-05-23 17:17:06'),
 (9, 'mdvaa', '1002420013', 77, '2018-05-23 17:17:50'),
-(10, 'sacascas', '5115100132', 76, '2018-05-23 17:18:17'),
-(11, 'fm;ese', '5115100132', 69, '2018-05-23 17:19:35');
+(10, 'sacascas', '5115100132', 76, '2018-05-23 17:18:17');
 
 -- --------------------------------------------------------
 
@@ -443,7 +490,6 @@ INSERT INTO `fits_thread` (`thread_id`, `thread_judul`, `thread_isi`, `thread_at
 (0, 'Maintenance', 'Akan diadakan maintenance hari ini selama 1 jam dimulai dari jam 16:30 WIB', NULL, 'public', 'admin', '2018-05-24 08:34:01', 0),
 (14, '1914 translation by H. Rackham', '\"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?\"', '', 'public', '5115100172', '2018-05-24 08:34:01', 0),
 (31, 'What is Lorem ipsum?', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industryâ€™s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.', '', 'public', '1002420013', '2018-05-24 08:34:01', 0),
-(69, 'fsdsdf', 'dsdgdsgdgsdg', '../../uploads/attachment/surf - Copy.jpg', 'public', '5115100166', '2018-05-24 08:34:01', 1),
 (70, 'fafs', 'dsgsdgsdg', '', 'public', '5115100166', '2018-05-24 08:34:01', 0),
 (71, 'dgssdg', 'sdgdsgd', '', 'public', '5115100166', '2018-05-24 08:34:01', 0),
 (72, 'dvsdvsd', 'dvsdv', '../../uploads/attachment/surf - Copy.jpg', 'public', '5115100172', '2018-05-24 08:34:01', 0),
@@ -460,7 +506,19 @@ INSERT INTO `fits_thread` (`thread_id`, `thread_judul`, `thread_isi`, `thread_at
 (104, 'casac', 'csaca', '', 'public', '1002420091', '2018-05-24 08:34:59', 0),
 (107, 'fewkp', 'dsp', '', 'private', '1002420091', '2018-05-24 09:23:24', 0),
 (108, 'canio', 'naio', '', 'public', '5115100166', '2018-05-24 09:32:52', 0),
-(109, 'fenio', 'nfweio', '', 'public', '5115100166', '2018-05-24 09:32:59', 0);
+(109, 'fenio', 'nfweio', '', 'public', '5115100166', '2018-05-24 09:32:59', 0),
+(110, 'aion', 'nion', '', 'private', '5115100166', '2018-05-24 10:11:03', 0),
+(111, 'scec', 'cdsks', '', 'private', '5115100132', '2018-05-24 10:13:00', 0),
+(112, 'nwvk', 'mope', '', 'private', '5115100132', '2018-05-24 10:14:07', 0),
+(113, 'csasackp', 'cnapacm', '', 'private', '5115100132', '2018-05-24 10:15:55', 0),
+(114, '1', 'w', '', 'private', '5115100132', '2018-05-24 10:16:22', 0),
+(115, '2', 'mp', '', 'private', '5115100132', '2018-05-24 10:16:38', 0),
+(116, 'wenfio', 'nfopew', '', 'private', '5115100132', '2018-05-24 10:16:52', 0),
+(117, 'cwhio', 'nico', '', 'private', '5115100132', '2018-05-24 10:19:29', 0),
+(118, 'wnefio', 'noiw', '', 'private', '5115100132', '2018-05-24 10:19:37', 0),
+(119, 'wemop', 'e', '', 'public', '5115100132', '2018-05-24 10:19:48', 0),
+(120, 'ewnioe', 'nwio', '', 'private', '5115100132', '2018-05-24 10:20:00', 0),
+(121, 'ewni', 'fejw', '', 'private', '5115100132', '2018-05-24 10:20:13', 0);
 
 -- --------------------------------------------------------
 
@@ -488,11 +546,11 @@ CREATE TABLE `fits_user` (
 
 INSERT INTO `fits_user` (`user_id`, `user_pass`, `user_name`, `user_role`, `user_photo`, `user_email`, `user_phone`, `user_notifcount`, `user_threadcount`, `last_login`, `user_note`) VALUES
 ('1002420013', '827ccb0eea8a706c4c34a16891f84e7b', 'MarkZ', 'Dosen', '../../uploads/profpic/user8-128x128.jpg', 'markzuqerberk@gmail.com', '08192837465', 0, 3, '2018-05-24 04:29:22', 'Hi. Iâ€™m Mark :)'),
-('1002420091', '1e01ba3e07ac48cbdab2d3284d1dd0fa', 'ElizabethH', 'Dosen', '../../uploads/profpic/user3-128x128.jpg', 'elizabethhiggins@gmail.com', '08273746519', 19, 6, '2018-05-24 07:32:41', 'Yiellowncac\r\nnascna\r\nscnajcn\r\nanc\r\n'),
-('5115100132', 'ab56b4d92b40713acc5af89985d4b786', 'ReinhartC', 'Mahasiswa', '../../uploads/profpic/user1-128x128.jpg', 'sgs3.rc@hotmail.com', '08111287200', 10, 2, '2018-05-24 09:46:32', 'Hi.\r\nHello.'),
-('5115100166', '57c48dcd266eadf089325affe125151f', 'IvanA', 'Mahasiswa', '../../uploads/profpic/user2-160x160.jpg', 'ivanagung@gmail.com', '081112345678', 2, 5, '2018-05-24 09:24:11', 'Halo semuanya'),
+('1002420091', '1e01ba3e07ac48cbdab2d3284d1dd0fa', 'ElizabethH', 'Dosen', '../../uploads/profpic/user3-128x128.jpg', 'elizabethhiggins@gmail.com', '08273746519', 19, 6, '2018-05-24 10:11:26', 'Yiellowncac\r\nnascna\r\nscnajcn\r\nanc\r\n'),
+('5115100132', 'ab56b4d92b40713acc5af89985d4b786', 'ReinhartC', 'Mahasiswa', '../../uploads/profpic/user1-128x128.jpg', 'sgs3.rc@hotmail.com', '08111287200', 21, 13, '2018-05-24 11:23:02', 'Hi.\r\nHello.'),
+('5115100166', '57c48dcd266eadf089325affe125151f', 'IvanA', 'Mahasiswa', '../../uploads/profpic/user2-160x160.jpg', 'ivanagung@gmail.com', '081112345678', 4, 5, '2018-05-24 10:09:49', 'Halo semuanya'),
 ('5115100172', 'ac9ec49afb308497ff99a4e9ab88bd3f', 'JoshuaP', 'Mahasiswa', '../../uploads/profpic/user6-128x128.jpg', 'joshuapardosi@gmail.com', '081187654321', 0, 4, '2018-05-23 17:20:22', 'Namaku ojosh hehehe'),
-('admin', '21232f297a57a5a743894a0e4a801fc3', 'Admin', 'Administrator', '../../dist/img/admin.png', 'adminfits@gmail.com', '-', 0, 0, '2018-05-24 08:26:16', NULL);
+('admin', '21232f297a57a5a743894a0e4a801fc3', 'Admin', 'Administrator', '../../dist/img/admin.png', 'adminfits@gmail.com', '-', 0, 0, '2018-05-24 11:23:15', NULL);
 
 --
 -- Indexes for dumped tables
@@ -556,13 +614,13 @@ ALTER TABLE `fits_user`
 -- AUTO_INCREMENT for table `fits_notification`
 --
 ALTER TABLE `fits_notification`
-  MODIFY `notif_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `notif_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `fits_private`
 --
 ALTER TABLE `fits_private`
-  MODIFY `private_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `private_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `fits_reply`
@@ -580,7 +638,7 @@ ALTER TABLE `fits_report`
 -- AUTO_INCREMENT for table `fits_thread`
 --
 ALTER TABLE `fits_thread`
-  MODIFY `thread_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `thread_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
 
 --
 -- Constraints for dumped tables
