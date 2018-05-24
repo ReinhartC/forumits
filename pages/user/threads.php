@@ -94,7 +94,7 @@
                             $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
                             $ThreadArr1 = array();
                             while($row1 = mysqli_fetch_assoc($sql1)){
-                              if($row['thread_access']=='public'){
+                              if($row1['thread_access']=='public'){
                           ?>
                           <tr>
                             <td class="text-left"><b>

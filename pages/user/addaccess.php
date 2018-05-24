@@ -39,17 +39,21 @@
           $row1 = mysqli_fetch_array($sql1);
 
           if(isset($_POST['add'])){
-            foreach($_POST['mahasiswa'] as $mhs){
-              include "../database/connect.php";
-              $query = "CALL new_private('$row1[tid]',$mhs)";
-              $sql = mysqli_query($db, $query);
-              $row = mysqli_fetch_array($sql);
-            }   
-            foreach($_POST['dosen'] as $dsn){
-              include "../database/connect.php";
-              $query = "CALL new_private('$row1[tid]',$dsn)";
-              $sql = mysqli_query($db, $query);
-              $row = mysqli_fetch_array($sql);
+            if(!empty($_POST['mahasiswa'])){
+              foreach($_POST['mahasiswa'] as $mhs){
+                include "../database/connect.php";
+                $query = "CALL new_private('$row1[tid]',$mhs)";
+                $sql = mysqli_query($db, $query);
+                $row = mysqli_fetch_array($sql);
+              }   
+            }
+            if(!empty($_POST['dosen'])){
+              foreach($_POST['dosen'] as $dsn){
+                include "../database/connect.php";
+                $query = "CALL new_private('$row1[tid]',$dsn)";
+                $sql = mysqli_query($db, $query);
+                $row = mysqli_fetch_array($sql);
+              }
             }
             include "../database/connect.php";
             $query = "CALL new_private('$row1[tid]','$_SESSION[userid]')";
