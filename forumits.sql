@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2018 at 09:07 AM
+-- Generation Time: May 24, 2018 at 11:52 AM
 -- Server version: 10.1.29-MariaDB
 -- PHP Version: 7.2.0
 
@@ -30,7 +30,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `account_edit` (`p_id` VARCHAR(16), 
 	IF EXISTS(SELECT 1 FROM fits_user WHERE user_id = p_id) THEN
 		UPDATE fits_user SET user_email=p_email WHERE user_id=p_id;
 		UPDATE fits_user SET user_phone=p_phone WHERE user_id=p_id;
-		UPDATE fits_user SET user_photo=CONCAT('../dist/img/',p_photo) WHERE user_id=p_id;
+		UPDATE fits_user SET user_photo=p_photo WHERE user_id=p_id;
 		UPDATE fits_user SET user_note=p_note WHERE user_id=p_id;
 		SELECT 0, 'User Account Updated';
 		
@@ -39,23 +39,44 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `account_edit` (`p_id` VARCHAR(16), 
 	END IF;
     END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `account_threadlist` (`p_id` VARCHAR(16))  BEGIN
-	SELECT fits_thread.*, fits_user.`user_id`, fits_user.`user_name`, fits_user.`user_role`
+CREATE DEFINER=`root`@`localhost` PROCEDURE `account_threadlist` (`p_id` VARCHAR(16), `lmt` INT)  BEGIN
+	SELECT fits_thread.*, fits_user.`user_name`, fits_user.`user_role`
 	FROM fits_thread, fits_user
 	WHERE fits_thread.`user_id`=fits_user.`user_id`
 	AND fits_user.`user_id` = p_id
 	ORDER BY thread_time DESC 
-	LIMIT 10;
-    END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `dos_threadlist` (`lmt` INT)  BEGIN
-	SELECT fits_thread.*, fits_user.`user_id`, fits_user.`user_name`, fits_user.`user_role`
-	FROM fits_thread, fits_user
-	WHERE fits_thread.`user_id`=fits_user.`user_id`
-	AND fits_user.`user_role` = "Dosen"
-	ORDER BY thread_time DESC 
 	LIMIT lmt;
     END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `announcement` ()  BEGIN
+	SELECT *
+	FROM fits_thread
+	WHERE fits_thread.`thread_id`=0;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `check_latest_thread` (`p_id` VARCHAR(32))  BEGIN
+	SELECT MAX(`thread_id`) as tid
+	FROM fits_thread
+	WHERE fits_thread.`user_id`=p_id;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_thread` (`p_id` BIGINT)  BEGIN
+	IF EXISTS(SELECT 1 FROM fits_thread WHERE thread_id = p_id) THEN
+		UPDATE fits_user SET user_threadcount=user_threadcount-1
+			where fits_user.`user_id` = (select fits_thread.`user_id` from fits_thread where fits_thread.`thread_id`=p_id);
+		DELETE FROM fits_thread WHERE thread_id = p_id;
+		SELECT 0, 'Thread Deleted';
+	ELSE
+		SELECT -1, 'Thread Delete Failed';
+	END IF;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `edit_thread` (`tid` INT, `isi` TEXT, `attachments` VARCHAR(128))  BEGIN
+	UPDATE fits_thread 
+	SET  thread_isi=isi, thread_attachment=attachments, thread_time=NOW(), thread_edit=thread_edit+1
+	WHERE thread_id=tid;
+	SELECT 1, 'Thread Edited';
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `login` (`p_id` VARCHAR(16), `p_pass` VARCHAR(64))  BEGIN
 	IF EXISTS(SELECT 1 FROM fits_user WHERE user_id = p_id) THEN
@@ -70,32 +91,106 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `login` (`p_id` VARCHAR(16), `p_pass
 	END IF;
     END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `mhs_threadlist` (`lmt` INT)  BEGIN
-	SELECT fits_thread.*, fits_user.`user_id`, fits_user.`user_name`, fits_user.`user_role`
-	FROM fits_thread, fits_user
-	WHERE fits_thread.`user_id`=fits_user.`user_id`
-	AND fits_user.`user_role` = "Mahasiswa"
-	ORDER BY thread_time DESC 
-	LIMIT lmt;
-    END$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `make_announce` (`judul` VARCHAR(32), `isi` TEXT, `active` INT)  BEGIN
+	UPDATE fits_thread 
+	SET  thread_judul=judul, thread_isi=isi, thread_time=NOW(), thread_edit=active
+	WHERE thread_id=0;
+	SELECT 1, 'Announcement Changed';
+END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `new_thread` (`judul` VARCHAR(32), `isi` TEXT, `attachments` VARCHAR(128), `input_user_id` VARCHAR(16))  BEGIN
-	INSERT INTO fits_thread (thread_judul, thread_isi, thread_attachment, user_id, thread_time) VALUES(judul, isi, attachments, input_user_id,NOW());
+CREATE DEFINER=`root`@`localhost` PROCEDURE `new_private` (`thread_ids` INT, `user_ids` VARCHAR(32))  BEGIN
+	
+	INSERT INTO fits_private SET
+	user_id = user_ids,
+	thread_id = thread_ids;
+	SELECT 1, 'Private Added';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `new_thread` (`judul` VARCHAR(32), `isi` TEXT, `attachments` VARCHAR(128), `access` VARCHAR(16), `input_user_id` VARCHAR(16))  BEGIN
+	INSERT INTO fits_thread (thread_judul, thread_isi, thread_attachment, thread_access, user_id, thread_time) VALUES(judul, isi, attachments, access, input_user_id,NOW());
 	UPDATE fits_user SET user_threadcount=user_threadcount+1 WHERE user_id=input_user_id;
 	SELECT 1, 'Thread Added';
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `notif_add` (`u_id` VARCHAR(16), `isi` TEXT)  BEGIN
+	INSERT INTO fits_notification (user_id, notif_isi, notif_time) VALUES(u_id, isi,NOW());
+	UPDATE fits_user SET user_notifcount=user_notifcount+1 WHERE user_id=u_id;
+	SELECT 1, 'Notification Added';
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `notif_list` (`p_id` VARCHAR(16), `lim` INT)  BEGIN
+	SELECT *
+	FROM fits_notification
+	where fits_notification.`user_id` = p_id
+	ORDER BY notif_time DESC 
+	LIMIT lim;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `prvt_count` (`p_id` VARCHAR(32))  BEGIN
+	SELECT count(`thread_id`) AS pc
+	FROM fits_private
+	WHERE fits_private.`user_id`=p_id;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `prvt_list` (`uid` VARCHAR(32), `lmt` INT)  BEGIN
+	SELECT fits_thread.*, fits_user.`user_name` as creator, fits_user.`user_role` as crole, fits_private.*
+	FROM fits_thread, fits_private, fits_user
+	where fits_private.`thread_id`=fits_thread.`thread_id`
+	and fits_thread.`user_id`=fits_user.`user_id`
+	and fits_private.`user_id`=uid
+	ORDER BY thread_time DESC 
+	LIMIT lmt;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `prvt_perm` (`tid` INT)  BEGIN
+	SELECT fits_private.*, fits_user.`user_name`
+	FROM fits_private, fits_user
+	where fits_user.`user_id`=fits_private.`user_id`
+	and fits_private.`thread_id`=tid;
+    END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `reply_load` (`p_id` VARCHAR(16))  BEGIN
-	SELECT distinct fits_reply.*, fits_user.`user_id`, fits_user.`user_name`, fits_user.`user_photo`
+	SELECT distinct fits_reply.*, fits_user.`user_name`, fits_user.`user_photo`
 	FROM fits_reply, fits_user
 	where fits_reply.`user_id` = fits_user.`user_id`
 	and fits_reply.`thread_id` = p_id
-	ORDER BY reply_time DESC;
+	ORDER BY reply_time asc;
     END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `reply_thread` (`isi` TEXT, `reply_thread_id` VARCHAR(16), `reply_user_id` VARCHAR(16))  BEGIN
 	INSERT INTO fits_reply (reply_isi, thread_id, user_id, reply_time) VALUES(isi, reply_thread_id, reply_user_id,NOW());
 	SELECT 1, 'Reply Added';
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `report_ignore` (`p_id` BIGINT)  BEGIN
+	IF EXISTS(SELECT 1 FROM fits_report WHERE report_id = p_id) THEN
+		DELETE FROM fits_report WHERE report_id = p_id;
+		SELECT 0, 'Report Deleted';
+	ELSE
+		SELECT -1, 'Report Delete Failed';
+	END IF;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `report_list` (`lmt` INT)  BEGIN
+	SELECT fits_report.*, fits_user.`user_name` as reporter, fits_thread.`thread_judul`
+	FROM fits_report, fits_user, fits_thread
+	WHERE fits_report.`reporter`=fits_user.`user_id`
+	and fits_report.`thread_id`=fits_thread.`thread_id`
+	ORDER BY report_time DESC 
+	LIMIT lmt;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `report_thread` (`isi` TEXT, `report_thread_id` VARCHAR(16), `report_user_id` VARCHAR(16))  BEGIN
+	INSERT INTO fits_report (report_isi, thread_id, reporter, report_time) VALUES(isi, report_thread_id, report_user_id,NOW());
+	SELECT 1, 'Report Added';
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `report_view` (`p_id` INT)  BEGIN
+	SELECT fits_report.*, fits_user.`user_name`, fits_thread.*
+	FROM fits_report, fits_user, fits_thread
+	WHERE fits_report.`reporter`=fits_user.`user_id`
+	and fits_report.`thread_id`=fits_thread.`thread_id`
+	AND fits_report.`report_id`=p_id;
     END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `search_thread` (`keyword` VARCHAR(64))  BEGIN
@@ -107,11 +202,41 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `search_thread` (`keyword` VARCHAR(6
 	or fits_thread.`thread_isi` LIKE CONCAT('%',keyword,'%'));
     END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_load` (`p_id` INT)  BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_list` (`lmt` INT)  BEGIN
+	SELECT fits_thread.*, fits_user.`user_name`, fits_user.`user_role`
+	FROM fits_thread, fits_user
+	WHERE fits_thread.`user_id`=fits_user.`user_id`
+	ORDER BY thread_time DESC 
+	LIMIT lmt;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_load` (`const` VARCHAR(64), `lmt` INT)  BEGIN
+	SELECT fits_thread.*, fits_user.`user_name`, fits_user.`user_role`
+	FROM fits_thread, fits_user
+	WHERE fits_thread.`user_id`=fits_user.`user_id`
+	AND fits_user.`user_role` = const
+	ORDER BY thread_time DESC 
+	LIMIT lmt;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_status` (`tid` INT)  BEGIN
+	SELECT fits_thread.`thread_access`
+	FROM fits_thread
+	Where fits_thread.`thread_id`=tid;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `thread_view` (`p_id` INT)  BEGIN
 	SELECT fits_thread.*, fits_user.*
 	FROM fits_thread, fits_user
 	WHERE fits_thread.`user_id`=fits_user.`user_id`
 	AND fits_thread.`thread_id`=p_id;
+    END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `users_list` (`lmt` INT)  BEGIN
+	SELECT * FROM fits_user
+	where user_id != "admin"
+	ORDER BY last_login DESC 
+	LIMIT lmt;
     END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `user_data_acc` (`p_id` VARCHAR(16))  BEGIN
@@ -150,7 +275,29 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `user_data_nav` (`p_id` VARCHAR(16))
 	END IF;
     END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `user_load` (`const` VARCHAR(64), `lmt` INT)  BEGIN
+	SELECT user_name, user_id, user_role
+	FROM fits_user
+	WHERE user_role = const
+	ORDER BY user_name ASC
+	LIMIT lmt;
+    END$$
+
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fits_announcenment`
+--
+
+CREATE TABLE `fits_announcenment` (
+  `announcement_id` int(11) NOT NULL,
+  `announcement_judul` varchar(32) NOT NULL,
+  `announcement_isi` text NOT NULL,
+  `announcement_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `announcement_status` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -159,9 +306,69 @@ DELIMITER ;
 --
 
 CREATE TABLE `fits_notification` (
-  `notif_id` varchar(16) NOT NULL,
-  `user_id` varchar(16) NOT NULL
+  `notif_id` int(11) NOT NULL,
+  `user_id` varchar(16) NOT NULL,
+  `notif_isi` text NOT NULL,
+  `notif_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `fits_notification`
+--
+
+INSERT INTO `fits_notification` (`notif_id`, `user_id`, `notif_isi`, `notif_time`) VALUES
+(39, '5115100132', 'You have successfully created the â€™Ansonoiwenâ€™ thread', '2018-05-24 04:27:26'),
+(40, '5115100132', 'You have successfully created the â€™fjfnonwfenâ€™ thread', '2018-05-24 04:27:37'),
+(41, '5115100132', 'You have successfully created the â€™nionwoâ€™ thread', '2018-05-24 04:27:43'),
+(42, '5115100132', 'You have successfully deleted your â€™nionwoâ€™ thread', '2018-05-24 04:28:10'),
+(43, '5115100132', 'You have successfully edited your â€™Ansonoiwenâ€™ thread', '2018-05-24 04:28:51'),
+(44, '5115100132', 'You have successfully created the â€™reportâ€™ thread', '2018-05-24 04:29:08'),
+(45, '5115100132', 'MarkZ have commented on your â€™Ansonoiwenâ€™ thread', '2018-05-24 04:29:49'),
+(46, '5115100132', 'IvanA have commented on your â€™Ansonoiwenâ€™ thread', '2018-05-24 04:30:15'),
+(47, '5115100132', 'You have successfully edited your â€™reportâ€™ thread', '2018-05-24 07:31:42'),
+(48, '5115100132', 'You have successfully deleted your â€™reportâ€™ thread', '2018-05-24 07:31:50'),
+(49, '1002420091', 'ReinhartC have commented on your â€™vdsvsvdsâ€™ thread', '2018-05-24 07:32:30'),
+(50, '1002420091', 'Admin have deleted your â€™vdsvsvdsâ€™ thread', '2018-05-24 07:34:52'),
+(51, '1002420091', 'You have successfully created the â€™aâ€™ thread', '2018-05-24 07:37:17'),
+(52, '1002420091', 'You have successfully created the â€™sâ€™ thread', '2018-05-24 07:37:25'),
+(53, '1002420091', 'You have successfully created the â€™sâ€™ thread', '2018-05-24 07:37:30'),
+(54, '1002420091', 'You have successfully created the â€™dâ€™ thread', '2018-05-24 07:37:36'),
+(55, '1002420091', 'You have successfully created the â€™gqdâ€™ thread', '2018-05-24 07:37:42'),
+(56, '1002420091', 'You have successfully created the â€™csâ€™ thread', '2018-05-24 07:37:48'),
+(57, '1002420091', 'You have successfully deleted your â€™gqdâ€™ thread', '2018-05-24 08:28:28'),
+(58, '1002420091', 'You have successfully deleted your â€™sâ€™ thread', '2018-05-24 08:28:34'),
+(59, '1002420091', 'You have successfully deleted your â€™csâ€™ thread', '2018-05-24 08:28:38'),
+(60, '1002420091', 'You have successfully deleted your â€™sâ€™ thread', '2018-05-24 08:28:44'),
+(61, '1002420091', 'You have successfully created the â€™csâ€™ thread', '2018-05-24 08:29:25'),
+(62, '1002420091', 'You have successfully created the â€™dsfâ€™ thread', '2018-05-24 08:30:42'),
+(63, '1002420091', 'You have successfully created the â€™scsâ€™ thread', '2018-05-24 08:34:48'),
+(64, '1002420091', 'You have successfully created the â€™casacâ€™ thread', '2018-05-24 08:34:59'),
+(65, '1002420091', 'You have successfully created the â€™dsaâ€™ thread', '2018-05-24 08:39:17'),
+(66, '1002420091', 'You have successfully created the â€™asfaâ€™ thread', '2018-05-24 09:15:01'),
+(67, '1002420091', 'You have successfully created the â€™fewkpâ€™ thread', '2018-05-24 09:23:24'),
+(68, '5115100166', 'You have successfully created the â€™canioâ€™ thread', '2018-05-24 09:32:52'),
+(69, '5115100166', 'You have successfully created the â€™fenioâ€™ thread', '2018-05-24 09:33:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fits_private`
+--
+
+CREATE TABLE `fits_private` (
+  `private_id` int(11) NOT NULL,
+  `thread_id` int(11) NOT NULL,
+  `user_id` varchar(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `fits_private`
+--
+
+INSERT INTO `fits_private` (`private_id`, `thread_id`, `user_id`) VALUES
+(1, 107, '5115100132'),
+(2, 107, '1002420013'),
+(3, 107, '1002420091');
 
 -- --------------------------------------------------------
 
@@ -182,12 +389,34 @@ CREATE TABLE `fits_reply` (
 --
 
 INSERT INTO `fits_reply` (`reply_id`, `reply_isi`, `thread_id`, `user_id`, `reply_time`) VALUES
-(10, 'Mantab infonya gan...', 31, '1002420091', '2018-04-26 06:42:53'),
-(11, 'Apa itu?', 16, '1002420091', '2018-04-26 06:51:29'),
-(12, 'Hi Iâ€™m Ivan :)', 31, '5115100166', '2018-04-26 06:52:06'),
-(13, 'Mantabb', 18, '5115100132', '2018-04-26 06:54:07'),
-(14, 'opopo\r\n', 31, '5115100132', '2018-04-26 07:04:28'),
-(15, 'kmm', 32, '5115100132', '2018-04-26 07:05:44');
+(19, 'dsvsdv', 31, '1002420091', '2018-05-23 17:17:03'),
+(50, 'fenwowfnew\r\n', 90, '1002420013', '2018-05-24 04:29:49'),
+(51, 'fewiewnfownf\r\n', 90, '5115100166', '2018-05-24 04:30:15');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fits_report`
+--
+
+CREATE TABLE `fits_report` (
+  `report_id` int(11) NOT NULL,
+  `report_isi` text NOT NULL,
+  `reporter` varchar(16) NOT NULL,
+  `thread_id` int(11) NOT NULL,
+  `report_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `fits_report`
+--
+
+INSERT INTO `fits_report` (`report_id`, `report_isi`, `reporter`, `thread_id`, `report_time`) VALUES
+(6, 'dsvsvsdv', '1002420091', 73, '2018-05-23 17:16:49'),
+(7, 'vsmdl;vs', '1002420091', 31, '2018-05-23 17:17:06'),
+(9, 'mdvaa', '1002420013', 77, '2018-05-23 17:17:50'),
+(10, 'sacascas', '5115100132', 76, '2018-05-23 17:18:17'),
+(11, 'fm;ese', '5115100132', 69, '2018-05-23 17:19:35');
 
 -- --------------------------------------------------------
 
@@ -200,34 +429,38 @@ CREATE TABLE `fits_thread` (
   `thread_judul` varchar(32) NOT NULL,
   `thread_isi` text NOT NULL,
   `thread_attachment` varchar(128) DEFAULT NULL,
+  `thread_access` varchar(16) NOT NULL DEFAULT 'public',
   `user_id` varchar(16) NOT NULL,
-  `thread_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `thread_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `thread_edit` smallint(6) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `fits_thread`
 --
 
-INSERT INTO `fits_thread` (`thread_id`, `thread_judul`, `thread_isi`, `thread_attachment`, `user_id`, `thread_time`) VALUES
-(2, 'Thread 1', '---- Thread pertamaaaaa ----', '', '5115100132', '2018-04-25 17:27:53'),
-(3, 'Thread create 2', 'Thread buatan pertamaa', '', '5115100132', '2018-04-25 17:32:32'),
-(4, 'Thread create 3', 'Coba-coba bikin thread di website ah. Kedua nehhh', 'boxed-bg.jpg', '5115100166', '2018-04-25 17:34:44'),
-(5, 'Thread create 4', 'Coba bikin juga nih. Skalian stability test wkkwwk :)', '', '5115100172', '2018-04-25 17:36:28'),
-(6, 'Thread create 5 (Dosen)', 'Thread dosen pertama neh wkwkwk. Nyoba attachment dulu dah.\r\nLancar jaya aminn', 'photo4.jpg', '1002420013', '2018-04-25 17:37:45'),
-(7, 'Thread Create 6 (Dosen)', 'Thread pertama ane nih hehe.', '', '1002420091', '2018-04-25 17:38:23'),
-(8, 'Thread create 7 ', 'Thread kedua saya hehe. Coba attachment deh skalian. Nih ruang makan', 'photo2.png', '1002420091', '2018-04-25 17:38:55'),
-(9, 'Thread create 8', 'Balik lagi neh bikin thread ane. Kali ini pake attachment dah :)))))', 'photo1.png', '5115100132', '2018-04-25 17:40:08'),
-(10, 'Thread Create 9', 'Mulai spam nih saya. Maaf hehe', '', '5115100132', '2018-04-25 17:40:34'),
-(11, 'Thread Create 10', '-------=============--------\r\nThread ke SEPULUHHHHHH.\r\nMuantap...\r\nGG FORUMITS.\r\nNih gambar orang wkwkwkwwk :))\r\n-------=============--------', 'avatar.png', '5115100172', '2018-04-25 17:41:47'),
-(12, 'The standard Lorem Ipsum passage', '\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\"', '', '5115100166', '2018-04-25 17:42:59'),
-(13, 'Section 1.10.32 of \"de Finibus B', '\"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\"', 'photo1.png', '5115100132', '2018-04-25 17:43:43'),
-(14, '1914 translation by H. Rackham', '\"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?\"', '', '5115100172', '2018-04-25 17:44:28'),
-(15, 'Bingung :|', 'Ini kenapa pada lorem ipsum deh hahahaha', '', '1002420013', '2018-04-25 17:45:03'),
-(16, 'Section 1.10.33 of \"de Finibus B', '\"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.\"', 'user8-128x128.jpg', '1002420013', '2018-04-25 17:45:42'),
-(17, 'Pertanyaan', 'Kenapa semua jadi lorem ipsummmm', '', '1002420091', '2018-04-25 17:46:31'),
-(18, 'Coba lagi :)', 'Wah masih lancar hehehe', 'photo2.png', '1002420091', '2018-04-25 19:33:19'),
-(31, 'What is Lorem ipsum?', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industryâ€™s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.', '', '1002420013', '2018-04-26 05:50:28'),
-(32, 'njnjnjn', 'mmkmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmâ€™', '', '5115100132', '2018-04-26 07:05:30');
+INSERT INTO `fits_thread` (`thread_id`, `thread_judul`, `thread_isi`, `thread_attachment`, `thread_access`, `user_id`, `thread_time`, `thread_edit`) VALUES
+(0, 'Maintenance', 'Akan diadakan maintenance hari ini selama 1 jam dimulai dari jam 16:30 WIB', NULL, 'public', 'admin', '2018-05-24 08:34:01', 0),
+(14, '1914 translation by H. Rackham', '\"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?\"', '', 'public', '5115100172', '2018-05-24 08:34:01', 0),
+(31, 'What is Lorem ipsum?', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industryâ€™s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.', '', 'public', '1002420013', '2018-05-24 08:34:01', 0),
+(69, 'fsdsdf', 'dsdgdsgdgsdg', '../../uploads/attachment/surf - Copy.jpg', 'public', '5115100166', '2018-05-24 08:34:01', 1),
+(70, 'fafs', 'dsgsdgsdg', '', 'public', '5115100166', '2018-05-24 08:34:01', 0),
+(71, 'dgssdg', 'sdgdsgd', '', 'public', '5115100166', '2018-05-24 08:34:01', 0),
+(72, 'dvsdvsd', 'dvsdv', '../../uploads/attachment/surf - Copy.jpg', 'public', '5115100172', '2018-05-24 08:34:01', 0),
+(73, 'fsfsfs`wkwen`', 'â€™ewâ€™wefâ€™wâ€™fwâ€™e', '', 'public', '5115100172', '2018-05-24 08:34:01', 0),
+(74, 'svsdv', 'vdvsdsdv', '', 'public', '5115100172', '2018-05-24 08:34:01', 0),
+(75, 'vdsvsdvdsn', 'nsdvnsdvns', '../../uploads/attachment/surf - Copy.jpg', 'public', '1002420013', '2018-05-24 08:34:01', 0),
+(76, 'vsvsd', 'dsfes', '', 'public', '1002420013', '2018-05-24 08:34:01', 0),
+(77, 'sdvewv', 'vsdvsdvds', '../../uploads/attachment/surf - Copy.jpg', 'public', '1002420091', '2018-05-24 08:34:01', 0),
+(90, 'Ansonoiwen', 'nwionwe', '../../uploads/attachment/surf - Copy.jpg', 'public', '5115100132', '2018-05-24 08:34:01', 1),
+(91, 'fjfnonwfen', 'nweofnownfe', '', 'public', '5115100132', '2018-05-24 08:34:01', 0),
+(97, 'a', 'a', '', 'public', '1002420091', '2018-05-24 08:34:01', 0),
+(100, 'd', 'd', '', 'public', '1002420091', '2018-05-24 08:34:01', 0),
+(103, 'scs', 'csacsa', '', 'public', '1002420091', '2018-05-24 08:34:48', 0),
+(104, 'casac', 'csaca', '', 'public', '1002420091', '2018-05-24 08:34:59', 0),
+(107, 'fewkp', 'dsp', '', 'private', '1002420091', '2018-05-24 09:23:24', 0),
+(108, 'canio', 'naio', '', 'public', '5115100166', '2018-05-24 09:32:52', 0),
+(109, 'fenio', 'nfweio', '', 'public', '5115100166', '2018-05-24 09:32:59', 0);
 
 -- --------------------------------------------------------
 
@@ -239,8 +472,8 @@ CREATE TABLE `fits_user` (
   `user_id` varchar(16) NOT NULL,
   `user_pass` varchar(64) NOT NULL,
   `user_name` varchar(20) NOT NULL,
-  `user_role` varchar(12) NOT NULL,
-  `user_photo` varchar(255) NOT NULL DEFAULT '../dist/img/avatar.png',
+  `user_role` varchar(32) NOT NULL,
+  `user_photo` varchar(255) NOT NULL DEFAULT '../../dist/img/avatar.png',
   `user_email` varchar(64) DEFAULT '-',
   `user_phone` varchar(16) DEFAULT '-',
   `user_notifcount` int(11) DEFAULT '0',
@@ -254,15 +487,22 @@ CREATE TABLE `fits_user` (
 --
 
 INSERT INTO `fits_user` (`user_id`, `user_pass`, `user_name`, `user_role`, `user_photo`, `user_email`, `user_phone`, `user_notifcount`, `user_threadcount`, `last_login`, `user_note`) VALUES
-('1002420013', '827ccb0eea8a706c4c34a16891f84e7b', 'MarkZ', 'Dosen', '../dist/img/user8-128x128.jpg', 'markzuqerberk@gmail.com', '08192837465', 0, 7, '2018-04-26 05:40:19', 'Hi. Iâ€™m Mark :)'),
-('1002420091', '1e01ba3e07ac48cbdab2d3284d1dd0fa', 'ElizabethH', 'Dosen', '../dist/img/user4-128x128.jpg', 'elizabethhiggins@gmail.com', '08273746519', 0, 4, '2018-04-26 06:42:33', 'Yiellow'),
-('5115100132', 'ab56b4d92b40713acc5af89985d4b786', 'ReinhartC', 'Mahasiswa', '../dist/img/user1-128x128.jpg', 'sgs3.rc@hotmail.com', '08111287200', 0, 15, '2018-04-26 06:53:59', 'Hi.\r\nHello.'),
-('5115100166', '57c48dcd266eadf089325affe125151f', 'IvanA', 'Mahasiswa', '../dist/img/user2-160x160.jpg', 'ivanagung@gmail.com', '081112345678', 0, 2, '2018-04-26 06:51:52', 'Halo semuanya'),
-('5115100172', 'ac9ec49afb308497ff99a4e9ab88bd3f', 'JoshuaP', 'Mahasiswa', '../dist/img/user6-128x128.jpg', 'joshuapardosi@gmail.com', '081187654321', 0, 3, '2018-04-25 17:44:09', 'Namaku ojosh hehehe');
+('1002420013', '827ccb0eea8a706c4c34a16891f84e7b', 'MarkZ', 'Dosen', '../../uploads/profpic/user8-128x128.jpg', 'markzuqerberk@gmail.com', '08192837465', 0, 3, '2018-05-24 04:29:22', 'Hi. Iâ€™m Mark :)'),
+('1002420091', '1e01ba3e07ac48cbdab2d3284d1dd0fa', 'ElizabethH', 'Dosen', '../../uploads/profpic/user3-128x128.jpg', 'elizabethhiggins@gmail.com', '08273746519', 19, 6, '2018-05-24 07:32:41', 'Yiellowncac\r\nnascna\r\nscnajcn\r\nanc\r\n'),
+('5115100132', 'ab56b4d92b40713acc5af89985d4b786', 'ReinhartC', 'Mahasiswa', '../../uploads/profpic/user1-128x128.jpg', 'sgs3.rc@hotmail.com', '08111287200', 10, 2, '2018-05-24 09:46:32', 'Hi.\r\nHello.'),
+('5115100166', '57c48dcd266eadf089325affe125151f', 'IvanA', 'Mahasiswa', '../../uploads/profpic/user2-160x160.jpg', 'ivanagung@gmail.com', '081112345678', 2, 5, '2018-05-24 09:24:11', 'Halo semuanya'),
+('5115100172', 'ac9ec49afb308497ff99a4e9ab88bd3f', 'JoshuaP', 'Mahasiswa', '../../uploads/profpic/user6-128x128.jpg', 'joshuapardosi@gmail.com', '081187654321', 0, 4, '2018-05-23 17:20:22', 'Namaku ojosh hehehe'),
+('admin', '21232f297a57a5a743894a0e4a801fc3', 'Admin', 'Administrator', '../../dist/img/admin.png', 'adminfits@gmail.com', '-', 0, 0, '2018-05-24 08:26:16', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `fits_announcenment`
+--
+ALTER TABLE `fits_announcenment`
+  ADD PRIMARY KEY (`announcement_id`);
 
 --
 -- Indexes for table `fits_notification`
@@ -272,12 +512,28 @@ ALTER TABLE `fits_notification`
   ADD KEY `notif_user_id` (`user_id`);
 
 --
+-- Indexes for table `fits_private`
+--
+ALTER TABLE `fits_private`
+  ADD PRIMARY KEY (`private_id`),
+  ADD KEY `fk_tid` (`thread_id`),
+  ADD KEY `fk_uid` (`user_id`);
+
+--
 -- Indexes for table `fits_reply`
 --
 ALTER TABLE `fits_reply`
   ADD PRIMARY KEY (`reply_id`),
   ADD KEY `reply_user_id` (`user_id`),
   ADD KEY `reply_thread_id` (`thread_id`);
+
+--
+-- Indexes for table `fits_report`
+--
+ALTER TABLE `fits_report`
+  ADD PRIMARY KEY (`report_id`),
+  ADD KEY `fk_user_reporter` (`reporter`),
+  ADD KEY `fk_thread_id` (`thread_id`);
 
 --
 -- Indexes for table `fits_thread`
@@ -297,16 +553,34 @@ ALTER TABLE `fits_user`
 --
 
 --
+-- AUTO_INCREMENT for table `fits_notification`
+--
+ALTER TABLE `fits_notification`
+  MODIFY `notif_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+
+--
+-- AUTO_INCREMENT for table `fits_private`
+--
+ALTER TABLE `fits_private`
+  MODIFY `private_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `fits_reply`
 --
 ALTER TABLE `fits_reply`
-  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+
+--
+-- AUTO_INCREMENT for table `fits_report`
+--
+ALTER TABLE `fits_report`
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `fits_thread`
 --
 ALTER TABLE `fits_thread`
-  MODIFY `thread_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `thread_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- Constraints for dumped tables
@@ -319,11 +593,25 @@ ALTER TABLE `fits_notification`
   ADD CONSTRAINT `notif_user_id` FOREIGN KEY (`user_id`) REFERENCES `fits_user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `fits_private`
+--
+ALTER TABLE `fits_private`
+  ADD CONSTRAINT `fk_tid` FOREIGN KEY (`thread_id`) REFERENCES `fits_thread` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_uid` FOREIGN KEY (`user_id`) REFERENCES `fits_user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `fits_reply`
 --
 ALTER TABLE `fits_reply`
   ADD CONSTRAINT `reply_thread_id` FOREIGN KEY (`thread_id`) REFERENCES `fits_thread` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `reply_user_id` FOREIGN KEY (`user_id`) REFERENCES `fits_user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `fits_report`
+--
+ALTER TABLE `fits_report`
+  ADD CONSTRAINT `fk_thread_id` FOREIGN KEY (`thread_id`) REFERENCES `fits_thread` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_user_reporter` FOREIGN KEY (`reporter`) REFERENCES `fits_user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `fits_thread`
