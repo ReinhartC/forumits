@@ -12,8 +12,22 @@
       <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
         <!-- Links -->
         <ul class="nav navbar-nav">
-          <li><a href="index.php">Home</a></li>
-          <li><a href="threads.php">Threads</a></li>
+          <?php 
+            if($_SESSION['userid']=="admin"){
+              echo"
+                <li><a href='admin.php'>Home</a></li>
+                <li><a href='reports.php'>Reports</a></li>
+                <li><a href='threads.php'>Threads</a></li>
+                <li><a href='users.php'>Users</a></li>
+              ";
+            }
+            else{
+              echo "
+                <li><a href='index.php'>Home</a></li>
+                <li><a href='threads.php'>Threads</a></li>                
+              ";
+            }
+          ?>
         </ul>
 
 
@@ -26,16 +40,22 @@
         ?>
 
         <!-- Searchbar -->
-        <form role="form" class="navbar-form navbar-left" method="post">
-          <div class="form-group">
-            <div class="col-sm-7">
-              <input class="form-control" id="navbar-search-input" type="text" name="navbar-search-input" placeholder="Enter keyword here" required=""/>
-            </div>
-            <div class="col-sm-2 text-center">
-              <input class="btn btn-info btn-md btn-flat" style="color:#0288D1; background-color:#FAFAFA" type="submit" name="check" id="check" value="Search"/>
-            </div>
-          </div>
-        </form>
+        <?php 
+            if($_SESSION['userid']!="admin"){
+              echo"
+                <form role='form' class='navbar-form navbar-left' method='post'>
+                  <div class='form-group'>
+                    <div class='col-sm-7'>
+                      <input class='form-control' id='navbar-search-input' type='text' name='navbar-search-input' placeholder='Enter keyword here' required=''/>
+                    </div>
+                    <div class='col-sm-2 text-center'>
+                      <input class='btn btn-info btn-md btn-flat' style='color:#0288D1; background-color:#FAFAFA' type='submit' name='check' id='check' value='Search'/>
+                    </div>
+                  </div>
+                </form>
+              ";
+            }
+        ?>
       </div>
       <!-- /NAVBAR-LEFTSIDE -->
 
@@ -44,39 +64,74 @@
         <ul class="nav navbar-nav">
 
           <!-- New Thread -->
-          <li><a href="newthread.php"><i class="fa fa-pencil"></i></a></li>
+          <?php 
+            if($_SESSION['userid']!="admin"){
+              echo"
+                <li><a href='newthread.php'><i class='fa fa-pencil'></i></a></li>
+              ";
+            }
+            else{
+              echo"
+                <li><a href='announcement.php'><i class='fa fa-pencil'></i>&nbsp;&nbsp;Announcement</a></li>
+              ";
+            } 
+          
 
-          <!-- User data call -->
-          <?php
+            //<!-- User data call -->          
             if(isset($_SESSION['userid'])){
                 include "../database/connect.php";
                 $query = "CALL user_data_nav('$_SESSION[userid]')";
                 $sql = mysqli_query($db, $query);
                 $row = mysqli_fetch_array($sql);
+                $_SESSION['username']=$row['user_name'];
+            }
+          
+            //<!-- Notifications -->          
+            if($_SESSION['userid']!="admin"){
+              include '../database/connect.php';
+              $query1 = "CALL notif_list('$_SESSION[userid]')";
+              $sql1 = mysqli_query($db, $query1) or die("Query fail : ".mysqli_error($db));
+              $NotifArr = array();
+              echo"
+                <li class='dropdown notifications-menu'>
+                  <a href='#' class='dropdown-toggle' data-toggle='dropdown'>
+                    <i class='fa fa-bell-o'></i>
+                  </a>
+                  <ul class='dropdown-menu'>
+                    <li class='header'><strong>Notifications</strong></li>
+                    <li>
+                      <ul class='menu'>
+                        <li>
+                          
+              ";
+              if($row['user_notifcount']>0){
+                while($row1 = mysqli_fetch_assoc($sql1)){
+                  echo "<a>$row1[notif_isi]</a>";
+                }
+              }
+              else{
+                echo "<a>No Notification</a>";
+              }
+              echo"
+                      
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              ";
             }
           ?>
-          <!-- Notifications -->
-          <li class="dropdown notifications-menu">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <i class="fa fa-bell-o"></i>
-              <span class="label label-warning"><?php echo"$row[user_notifcount]";?></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li class="header">You have <?php echo"$row[user_notifcount]";?> notifications</li>
-              <li>
-                <ul class="menu">
-                  <li>
-                    <a href="#">
-                      <i class="fa fa-comment"></i>Notification feature will be coming soon...
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li class="footer"><a href="#">Viewed</a></li>
-            </ul>
-          </li>
-
           <!-- USER ACCOUNT MENU -->
+          <?php 
+            if(isset($_SESSION['userid'])){
+                include "../database/connect.php";
+                $query = "CALL user_data_nav('$_SESSION[userid]')";
+                $sql = mysqli_query($db, $query);
+                $row = mysqli_fetch_array($sql);
+                $_SESSION['username']=$row['user_name'];
+            }
+          ?>
           <li class="dropdown user user-menu">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               <img src="<?php echo"$row[user_photo]";?>" class="user-image" alt="User Image">
@@ -90,12 +145,28 @@
               </li>
               <!-- Menu Footer-->
               <li class="user-footer">
-                <div class="pull-left">
-                  <a href="account.php" class="btn btn-default btn-flat">Account</a>
-                </div>
-                <div class="pull-right">
-                  <a href="../database/logout.php" class="btn btn-default btn-flat">Logout</a>
-                </div>
+                
+                <?php 
+                  if($_SESSION['userid']!="admin"){
+                    echo"
+                      <div class='pull-left'>
+                        <a href='account.php' class='btn btn-default btn-flat'>Account</a>
+                      </div>
+                      <div class='pull-right'>
+                        <a href='../database/logout.php' class='btn btn-default btn-flat'>Logout</a>
+                      </div>
+                    ";
+                  }
+                  else{
+                    echo"
+                      <div class='text-center'>
+                        <a href='../database/logout.php' class='btn btn-default btn-flat'>Logout</a>
+                      </div>
+                    ";
+                  }
+                ?>
+                
+
               </li>
             </ul>
           </li>

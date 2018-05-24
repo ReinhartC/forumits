@@ -1,4 +1,4 @@
-<?php include "../database/verify.php"; ?>
+<?php include "../database/adminCheck.php"; ?>
 
 <!DOCTYPE html>
 <html>

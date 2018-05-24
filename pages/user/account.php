@@ -65,17 +65,17 @@
                   <h3 class="box-title">About</h3>
                 </div>
                 <div class="box-body">
-                  <strong><i class="fa fa-at margin-r-5"></i> Email</strong>
-                  <p class="text-muted">&emsp;&nbsp;&nbsp;<?php echo"$row[user_email]";?></p>
+                  <strong><i class="fa fa-at margin-r-5"></i> Email</strong><br>
+                  <p class="col-sm-6 text-muted"><?php echo"$row[user_email]";?></p>
                   <hr>
-                  <strong><i class="fa fa-phone margin-r-5"></i> Phone</strong>
-                  <p class="text-muted">&emsp;&nbsp;&nbsp;<?php echo"$row[user_phone]";?></p>
+                  <strong><i class="fa fa-phone margin-r-5"></i> Phone</strong><br>
+                  <p class="col-sm-6 text-muted"><?php echo"$row[user_phone]";?></p>
                   <hr>
-                  <strong><i class="fa fa-clone margin-r-5"></i> Threads</strong>
-                  <p class="text-muted">&emsp;&nbsp;&nbsp;<?php echo"$row[user_threadcount]";?> Threads</p>
+                  <strong><i class="fa fa-clone margin-r-5"></i> Threads</strong><br>
+                  <p class="col-sm-6 text-muted"><?php echo"$row[user_threadcount]";?> Threads</p>
                   <hr>
-                  <strong><i class="fa fa-sticky-note-o margin-r-5"></i> Note</strong>
-                  <p class="text-muted"><?php echo nl2br("$row[user_note]");?></p>
+                  <strong><i class="fa fa-sticky-note-o margin-r-5"></i> Note</strong><br>
+                  <p class="col-sm-6 text-muted"><?php echo nl2br("$row[user_note]");?></p>
                 </div>
               </div>
             </div>
@@ -116,7 +116,7 @@
                             <form method="post">
                               <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]";?></button>
                             </form>
-                          </b><br><small><?php echo"$row[user_name]";?></small></td>
+                          </b><small><?php echo"$row[user_name]";?></small></td>
                           <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
                         </tr>
                         <?php } ?>

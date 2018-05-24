@@ -57,6 +57,13 @@
                 $sql = mysqli_query($db, $query);
                 $row = mysqli_fetch_array($sql);
                 $adds=$row[1];
+
+                include "../database/connect.php";
+                $notiff="You have successfully edited your `$_POST[title]` thread";
+                $queryn = "CALL notif_add('$_SESSION[userid]','$notiff')";
+                $sqln = mysqli_query($db, $queryn);
+                $rown = mysqli_fetch_array($sqln);
+
                 echo '<meta http-equiv="refresh" content="0; URL=thread.php">';
                 mysqli_close($db);
               }
@@ -80,7 +87,7 @@
                   <div class="form-group col-sm-12">
                     <?php
                       echo"
-                        <textarea class='form-control' name='body' id='body' rows='5' cols='40' placeholder='Thread body'>$row1[thread_isi]</textarea>
+                        <textarea class='form-control' name='body' id='body' rows='5' cols='40' placeholder='Thread body' required=''>$row1[thread_isi]</textarea>
                       ";
                     ?>
                   </div>

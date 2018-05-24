@@ -2,11 +2,11 @@
       session_start();
       if(isset($_SESSION['userid'])){
       	if($_SESSION['userid'] == "admin"){
-        	header("Location:../admin/admin.php");
+        	header("Location:admin/admin.php");
             die;
       	}
       	else{
-            header("Location:../user/index.php");
+            header("Location:user/index.php");
             die;
         }
       }

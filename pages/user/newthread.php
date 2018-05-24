@@ -67,7 +67,7 @@
                       <input class="form-control" autofocus id="title" type="text" name="title" placeholder="Thread title" required=""/>
                   </div>
                   <div class="form-group col-sm-12">
-                      <textarea class="form-control" name="body" id="body" rows="5" cols="40" placeholder="Thread body"></textarea>
+                      <textarea class="form-control" name="body" id="body" rows="5" cols="40" placeholder="Thread body" required=""></textarea>
                   </div>
                   <div class="col-sm-12">
                     <div class="btn btn-default btn-file btn-flat">

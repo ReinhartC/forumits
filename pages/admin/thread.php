@@ -1,4 +1,4 @@
-<?php include "../database/verify.php"; ?>
+<?php include "../database/adminCheck.php"; ?>
 
 <!DOCTYPE html>
 <html>
@@ -39,18 +39,14 @@
                     $query3 = "CALL delete_thread($_POST[deletet])";
                     $sql3 = mysqli_query($db, $query3);
                     $row3 = mysqli_fetch_array($sql3);
-                    if ($_SESSION['userid']==$row['user_id']){
-                      include "../database/connect.php";
-                      $notiff="You have successfully deleted your `$row[thread_judul]` thread";
-                      $queryn = "CALL notif_add('$row[user_id]','$notiff')";
-                      $sqln = mysqli_query($db, $queryn);
-                      $rown = mysqli_fetch_array($sqln);
-                    }
+
+                    include "../database/connect.php";
+                    $notiff="Admin have deleted your `$row[thread_judul]` thread";
+                    $queryn = "CALL notif_add('$row[user_id]','$notiff')";
+                    $sqln = mysqli_query($db, $queryn);
+                    $rown = mysqli_fetch_array($sqln);
+
                     echo '<meta http-equiv="refresh" content="0; URL=account.php">';
-                }
-                if(isset($_POST['edit'])){
-                    $_SESSION['thread']=$_POST['edit'];
-                    echo '<meta http-equiv="refresh" content="0; URL=editthread.php">';
                 }
               ?>
               <!-- Main Thread -->
@@ -62,9 +58,6 @@
                       if($_SESSION['userid'] == "admin" || $_SESSION['userid'] == $row['user_id']){
                         echo"
                           <button class ='btn btn-sm btn-flat btn-danger pull-right' data-toggle='modal' data-target='#Delete'><em class='fa fa-trash'></em></button>
-                          <form action='#' method='post' class='pull-right' style='display:inline-block'>
-                            <button class ='btn btn-sm btn-flat btn-default' type='submit' name='edit' value='$row[thread_id]'><em class='fa fa-pencil'></em></button>
-                          </form>
                         ";
                       }
                       else{
@@ -139,42 +132,7 @@
                   </div>
                 </div>
               <?php } ?>
-
-              <?php
-                if(isset($_POST['enter'])){
-                  if($_POST['reply']==''){
-                    echo "<br><p style='color:#D50000'>&emsp;&emsp;Reply is empty.</p>";
-                  }
-                  else{
-                    $_POST['reply'] = str_replace("'", "’", $_POST['reply']);
-
-                    include "../database/connect.php";
-                    $query2 = "CALL reply_thread('$_POST[reply]','$_SESSION[thread]','$_SESSION[userid]')";
-                    $sql2 = mysqli_query($db, $query2);
-                    $row2 = mysqli_fetch_array($sql2);
-                    if ($_SESSION['userid']!=$row['user_id']){
-                      include "../database/connect.php";
-                      $notiff="$_SESSION[username] have replied to your `$row[thread_judul]` thread";
-                      $queryn = "CALL notif_add('$row[user_id]','$notiff')";
-                      $sqln = mysqli_query($db, $queryn);
-                      $rown = mysqli_fetch_array($sqln);
-                    }
-                    mysqli_close($db);
-                  }
-                }            
-              ?> 
-              <!-- Create replies -->
-              <div class="box-footer">
-                <form role="form" method="post">
-                  <div class="col-sm-11">
-                    <textarea class="form-control" name="reply" id="reply" placeholder="Enter your reply here" required=""></textarea>
-                  </div>
-                  <div>
-                    <input class="btn btn-success btn-md btn-flat" type="submit" name="enter" id="enter" value="Reply"/>
-                  </div>
-                </form>
-              </div>
-
+              
               <!-- /.box-footer -->
             </div>
             <!-- /.box -->

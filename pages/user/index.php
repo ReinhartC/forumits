@@ -67,7 +67,7 @@
                         <form method="post">
                           <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]";?></button>
                         </form>
-                      </b><br><small><?php echo"$row[user_name]";?></small></td>
+                      </b><small><?php echo"$row[user_name]";?></small></td>
                       <td class="text-right"><small><?php echo"$row[thread_time]";?>&emsp;</small></td>
                     </tr>
                     <?php } ?>
@@ -104,7 +104,7 @@
                         <form method="post">
                           <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]";?></button>
                         </form>
-                      </b><br><small><?php echo"$row[user_name]";?></small></td>
+                      </b><small><?php echo"$row[user_name]";?></small></td>
                       <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
                     </tr>
                     <?php } ?>
