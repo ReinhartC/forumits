@@ -92,6 +92,7 @@
                       $ThreadArr = array();
                       while($row = mysqli_fetch_assoc($sql)){
                         $acs=$row['thread_access'];
+                        if($row['thread_id']!=0){
                     ?>
                     <tr>
                       <td class="text-left"><b>
@@ -101,7 +102,7 @@
                       </b><small><?php echo"$row[user_name]";?></small></td>
                       <td class="text-right"><small><?php echo"$row[thread_time]";?>&emsp;</small></td>
                     </tr>
-                    <?php } ?>
+                    <?php }} ?>
 
                     </tbody>
                   </table>

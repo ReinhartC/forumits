@@ -114,7 +114,7 @@
                         <tr>
                           <td class="text-left"><b>
                             <form method="post">
-                              <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]";?></button>
+                              <button style="border:none; background:none; padding:0; color:#0073b7;" type="submit" name="thread" id="thread" value="<?php echo "$row[thread_id]";?>"><?php echo"$row[thread_judul]"; if($row['thread_access']=='private'){echo" &nbsp;<i class='fa fa-lock'></i>";}?></button>
                             </form>
                           </b><small><?php echo"$row[user_name]";?></small></td>
                           <td class="text-right"><small><?php echo"$row[thread_time]";?></small></td>
