@@ -98,7 +98,20 @@
                         echo "Edited ";
                       }
                     ?>
-                    by <?php echo"$row[user_name]";?> at <?php echo"$row[thread_time]";?></span>
+                    by <?php echo"$row[user_name]";?> at <?php echo"$row[thread_time]";?><br>
+                    <?php 
+                      if($row['thread_access']=='private'){
+                        echo "Contributors: ";
+                        include '../database/connect.php';
+                        $query4 = "CALL prvt_perm($_SESSION[thread])";
+                        $sql4 = mysqli_query($db, $query4) or die("Query fail : ".mysqli_error($db));
+                        $usrArr = array();
+                        while($row4 = mysqli_fetch_assoc($sql4)){
+                          echo "$row4[user_name] ";
+                        }
+                      }
+                    ?>
+                  </span>
                 </div>
               </div>
               <div class="box-body">

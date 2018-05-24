@@ -85,6 +85,7 @@
               <div class="box box-primary">
                 <div class="box-header with-border">
                   <h3 class="box-title">Latest Threads</h3>
+                  <a href="accthreads.php"><small class="pull-right">View All</small></a>
                 </div>
                 <div class="box-body no-padding">
                   <div class="table-responsive mailbox-messages">
@@ -109,7 +110,6 @@
                           $ThreadArr = array();
                           $ctr=0;
                           while($row = mysqli_fetch_assoc($sql)){
-                            $ctr++;
                         ?>
                         <tr>
                           <td class="text-left"><b>
@@ -126,17 +126,13 @@
                   </div>
                 </div>
               </div>
-              <?php
-                if($ctr>4){
-                  echo "<a class='btn btn-default btn-flat' href='accthreads.php'>View All</a>";
-                }
-              ?>
             </div>
 
             <div class="col-md-9">
               <div class="box box-primary">
                 <div class="box-header with-border">
-                  <h3 class="box-title">Latest Threads</h3>
+                  <h3 class="box-title">Private Threads</h3>
+                  <a href="privthreads.php"><small class="pull-right">View All</small></a>
                 </div>
                 <div class="box-body no-padding">
                   <div class="table-responsive mailbox-messages">
@@ -165,7 +161,6 @@
                           $ThreadArr1 = array();
                           $ctr1=0;
                           while($row1 = mysqli_fetch_assoc($sql1)){
-                            $ctr1++;
                         ?>
                         <tr>
                           <td class="text-left"><b>
@@ -182,11 +177,6 @@
                   </div>
                 </div>
               </div>
-              <?php
-                if($ctr1>4){
-                  echo "<a class='btn btn-default btn-flat' href='accthreads.php'>View All</a>";
-                }
-              ?>
             </div>
           </div>
 
